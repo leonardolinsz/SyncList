@@ -1,3 +1,5 @@
+
+const circle = document.getElementById('circulo');
 document.addEventListener('DOMContentLoaded', () => {
   fetch('/tarefas')
     .then(res => res.json())
@@ -44,3 +46,4 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 });
+
