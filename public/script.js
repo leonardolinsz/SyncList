@@ -1,49 +1,37 @@
+// Cria container da tarefa
+const tarefasContainer = document.createElement('div');
+tarefasContainer.classList.add('tarefasContainer');
 
-const circle = document.getElementById('circulo');
-document.addEventListener('DOMContentLoaded', () => {
-  fetch('/tarefas')
-    .then(res => res.json())
-    .then(tarefas => {
-      const container = document.getElementById('tarefasContainer');
+// Cria o box (conteúdo da tarefa)
+const box = document.createElement('div');
+box.classList.add('box');
 
-      tarefas.forEach(tarefa => {
-        const box = document.createElement('div');
-        box.classList.add('box');
+const titulo = document.createElement('h2');
+titulo.innerText = "Título: Tarefa teste";
 
-        const titulo = document.createElement('h1');
-        titulo.textContent = `Título: ${tarefa.titulo}`;
+const descricao = document.createElement('p');
+descricao.innerText = "Descrição: Tarefa que está sendo testada";
 
-        const descricao = document.createElement('p');
-        descricao.textContent = `Descrição: ${tarefa.descricao}`;
+const status = document.createElement('p');
+status.innerText = "Status: Concluída";
 
-        const status = document.createElement('p');
-        status.textContent = `Status: ${tarefa.concluida ? 'Concluída' : 'Pendente'}`;
+// Adiciona elementos no box
+box.appendChild(titulo);
+box.appendChild(descricao);
+box.appendChild(status);
 
-        const botao = document.createElement('button');
-        botao.textContent = 'Marcar como concluída';
-        botao.classList.add('btn');
-        botao.disabled = tarefa.concluida;
+// Cria checkbox
+const label = document.createElement('label');
+label.classList.add('checkbox-container');
 
-        // botao.addEventListener('click', () => {
-        //   fetch(`/tarefas/${tarefa._id}`, {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ concluida: true })
-        //   })
-        //   .then(res => res.json())
-        //   .then(() => {
-        //     status.textContent = 'Status: Concluída';
-        //     botao.disabled = true;
-        //   });
-        // });
+const checkbox = document.createElement('input');
+checkbox.type = 'checkbox';
 
-        box.appendChild(titulo);
-        box.appendChild(descricao);
-        box.appendChild(status);
-        box.appendChild(botao);
+label.appendChild(checkbox);
 
-        container.appendChild(box);
-      });
-    });
-});
+// Junta tudo no container principal
+tarefasContainer.appendChild(box);
+tarefasContainer.appendChild(label);
 
+// E depois adiciona esse container na sua página
+document.body.appendChild(tarefasContainer); // ou o elemento onde você quer colocar

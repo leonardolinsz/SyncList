@@ -13,7 +13,7 @@ h1{
     margin-top: 4vh;
 }
 
-#tarefasContainer{
+.tarefasContainer{
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -31,6 +31,7 @@ input[type="radio"] {
     transform: scale(1.5);
     margin-left: 2vw;
 }
+
 .circle {
     background-color:  darkmagenta;
     display: flex;
@@ -44,9 +45,82 @@ input[type="radio"] {
     margin-right: 3vw;
     border-radius: 30px;
     color: white;
-    margin-top: 60vh;
+    margin-top: 40vh;
+}
 
 .box{
     margin: 2vh;
+}
+.checkbox-container {
+  display: inline-block;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  user-select: none;
+}
 
+/* Esconde o input padrão */
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Cria a caixinha personalizada */
+.checkmark {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #eee;
+  border-radius: 4px;
+}
+
+/* Quando passa o mouse */
+.checkbox-container:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+
+/* Quando está marcada */
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+/* Adiciona o "check" dentro da caixinha */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 7px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+
+.box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conteudo {
+  display: flex;
+  flex-direction: column;
+}
+
+/* se quiser espaçar ainda mais bonito */
+.checkbox-container {
+  margin-left: 16px;
 }
