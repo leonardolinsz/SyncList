@@ -7,21 +7,31 @@
   <title>SyncList</title>
 </head>
 <body>
-<h1>SyncList</h1>
-    <div class="tarefasContainer">
-        <div class="box">
-            <h2>Título: Tarefa teste</h2>
-            <p>Descrição: Tarefa que está sendo testada</p>
-            <p>Status: Concluída</p>
-        </div>
-        <label>
-            <input type="checkbox">
-        </label>
-        </div>
+    <h1>SyncList</h1>
 
-    
-<div id="ciruclo" class="circle"> + </div>
+    <div id="filter">
+        <label for="filtro">Filtrar tarefas:</label>
+        <select id="filtro">
+            <option value="todas">Todas</option>
+            <option value="pendentes">Pendentes</option>
+            <option value="concluidas">Concluídas</option>
+        </select>
+    </div>
 
+<div id="tarefasContainer"></div>
+
+    <div class="tarefas" style="display: none;">
+        <div class="overlay" onclick="fecharPopUp()"></div>
+        <div class="forms">
+          <p class="close-btn" onclick="fecharPopUp()">×</p>
+          <h3>Crie uma tarefa</h3>
+          <input id="titulo" type="text" placeholder="Título">
+          <input id="descricao" type="text" placeholder="Descrição">
+          <button type="button" onclick="salvarTarefa()">Salvar</button>
+        </div>
+      </div>
+      
+<button id="circle" onclick="abrirPopUp()"> + </button>
 
 <script src="./script.js"></script>
 
