@@ -1,183 +1,185 @@
 const filtroSelect = document.getElementById('filtro');
-let tarefasContainer = document.querySelector('.tarefasContainer');
-
+const tarefasContainer = document.querySelector('.tarefasContainer') || criarContainer();
 let todasTarefas = [];
 
-if (!tarefasContainer) {
-  tarefasContainer = document.createElement('div');
-  tarefasContainer.classList.add('tarefasContainer');
-  document.body.appendChild(tarefasContainer);
+function criarContainer() {
+  const container = document.createElement('div');
+  container.classList.add('tarefasContainer');
+  document.body.appendChild(container);
+  return container;
 }
 
 function salvarTarefasNoLocalStorage() {
-    localStorage.setItem('tarefas', JSON.stringify(todasTarefas));
+  localStorage.setItem('tarefas', JSON.stringify(todasTarefas));
 }
 
 function carregarTarefasDoLocalStorage() {
-    const tarefasSalvas = localStorage.getItem('tarefas');
-    if (tarefasSalvas) {
-      todasTarefas = JSON.parse(tarefasSalvas);
-    } else {
-      todasTarefas = [];
-    }
-}
-  
-fetch('/tarefas')
-    .then(async response => {
-        const text = await response.text();
-        return JSON.parse(text); 
-    })
-    .then(data => {
-        data.forEach(tarefa => {
-        listarTarefas(tarefa);
-        });
-});
-  
-function abrirPopUp() {
-    const popup = document.querySelector('.tarefas');
-    if (popup) popup.style.display = 'flex';
-}
-    
-function fecharPopUp() {
-    const popup = document.querySelector('.tarefas');
-    if (popup) popup.style.display = 'none';
-}
+  const salvas = localStorage.getItem('tarefas');
+  todasTarefas = salvas ? JSON.parse(salvas) : [];
+  atualizarExibicaoConcluidas()
 
-function salvarTarefa() {
-    const titulo = document.getElementById('titulo').value;
-    const descricao = document.getElementById('descricao').value;
-  
-    if (!titulo || !descricao) {
-      alert('Por favor, preencha título e descrição.');
-      return;
-    }
-  
-    const novaTarefa = {
-      titulo,
-      descricao,
-      concluida: false
-    };
-  
-    todasTarefas.push(novaTarefa);
-    salvarTarefasNoLocalStorage();
-  
-    mostrarTarefas();
-  
-    fecharPopUp();
-    document.getElementById('titulo').value = '';
-    document.getElementById('descricao').value = '';
 }
 
 function mostrarTarefas() {
-    const filtro = filtroSelect.value;
-    sessionStorage.setItem('filtroTarefas', filtro);
+  const filtro = filtroSelect.value;
+  sessionStorage.setItem('filtroTarefas', filtro);
+
+  let tarefasFiltradas = todasTarefas;
+  if (filtro === 'pendentes') tarefasFiltradas = todasTarefas.filter(t => !t.concluida);
+  else if (filtro === 'concluidas') tarefasFiltradas = todasTarefas.filter(t => t.concluida);
   
-    let tarefasFiltradas;
-    if (filtro === 'pendentes') {
-      tarefasFiltradas = todasTarefas.filter(t => !t.concluida);
-    } else if (filtro === 'concluidas') {
-      tarefasFiltradas = todasTarefas.filter(t => t.concluida);
-    } else {
-      tarefasFiltradas = todasTarefas;
-    }
-  
-    tarefasContainer.innerHTML = '';
-  
-    tarefasFiltradas.forEach(tarefa => {
-      listarTarefas(tarefa);
-    });
+  atualizarExibicaoConcluidas()
+
+  tarefasContainer.innerHTML = tarefasFiltradas.map(tarefa => criarHTMLTarefa(tarefa)).join('');
+  adicionarEventos();
 }
 
-fetch('/tarefas')
-  .then(res => res.json())
-  .then(data => {
-    todasTarefas = data;
-    const filtroSalvo = sessionStorage.getItem('filtroTarefas') || 'todas';
-    filtroSelect.value = filtroSalvo;
-    mostrarTarefas();
-  });
+function criarHTMLTarefa(tarefa) {
+  return `
+    <div class="box" data-id="${tarefa._id || tarefa.titulo}">
+      <div>
+        <h2>Título: ${tarefa.titulo}</h2>
+        <p>Descrição: ${tarefa.descricao}</p>
+        <p>Status: ${tarefa.concluida ? 'Concluída' : 'Pendente'}</p>
+      </div>
+      <label class="checkbox-container">
+        <input type="checkbox" ${tarefa.concluida ? 'checked' : ''}>
+      </label>
+      <button class="btn-excluir-icon">🗑️</button>
+    </div>
+  `;
+}
 
-  function listarTarefas(tarefa) {
-    const box = document.createElement('div');
-    box.classList.add('box'); 
+function adicionarEventos() {
+  tarefasContainer.querySelectorAll('.box').forEach(box => {
+    const id = box.dataset.id;
+    const tarefa = todasTarefas.find(t => (t._id === id) || (t.titulo === id));
 
-    const textoDiv = document.createElement('div');
-
-    const titulo = document.createElement('h2');
-    titulo.innerText = `Título: ${tarefa.titulo}`;
-
-    const descricao = document.createElement('p');
-    descricao.innerText = `Descrição: ${tarefa.descricao}`;
-
-    const status = document.createElement('p');
-    status.innerText = `Status: ${tarefa.concluida ? 'Concluída' : 'Pendente'}`;
-
-    textoDiv.appendChild(titulo);
-    textoDiv.appendChild(descricao);
-    textoDiv.appendChild(status);
-
-    box.appendChild(textoDiv); 
-
-    const label = document.createElement('label');
-    label.classList.add('checkbox-container');
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = tarefa.concluida;
+    const checkbox = box.querySelector('input[type="checkbox"]');
 
     checkbox.addEventListener('change', () => {
-        tarefa.concluida = checkbox.checked;
-
-        const index = todasTarefas.findIndex(t => t._id === tarefa._id);
-        if (index > -1) {
-            todasTarefas[index].concluida = checkbox.checked;
-            salvarTarefasNoLocalStorage();
-            status.innerText = `Status: ${checkbox.checked ? 'Concluída' : 'Pendente'}`;
-        }
+      atualizarStatus(tarefa, checkbox.checked, box);
     });
 
-    label.appendChild(checkbox);
-    box.appendChild(label);
-
-    const botaoExcluir = document.createElement('button');
-    botaoExcluir.innerHTML = '🗑️'; 
-    botaoExcluir.classList.add('btn-excluir-icon');
-
-    botaoExcluir.addEventListener('click', () => {
-        try {
-            const resposta = fetch(`/tarefas/${tarefa._id}`, {
-                method: 'DELETE',
-            });
-    
-            if (resposta.ok) {
-                const index = todasTarefas.findIndex(t => t._id === tarefa._id);
-                if (index > -1) {
-                    todasTarefas.splice(index, 1);
-                    salvarTarefasNoLocalStorage();
-                    box.remove();
-                }
-            } else {
-                console.error('Erro ao excluir a tarefa no servidor');
-            }
-        } catch (erro) {
-            console.error('Erro server:', erro);
-        }
-    });
-
-    box.appendChild(botaoExcluir); 
-
-    tarefasContainer.appendChild(box); 
+    const btnExcluir = box.querySelector('button.btn-excluir-icon');
+    btnExcluir.addEventListener('click', () => excluirTarefa(tarefa, box));
+  });
 }
 
+function atualizarExibicaoConcluidas() {
+  const boxes = document.querySelectorAll('.box');
 
-function init() {
-    carregarTarefasDoLocalStorage();
+  boxes.forEach(box => {
+    const infoDiv = box.querySelector('div');
+    const titulo = infoDiv.querySelector('h2');
+    const descricao = infoDiv.querySelector('p:nth-child(2)');
+    const status = infoDiv.querySelector('p:nth-child(3)');
+
+    const checkbox = box.querySelector('input[type="checkbox"]');
+    const concluida = checkbox.checked;
+
+    if (concluida) {
+      descricao.style.display = 'none';
+      status.style.display = 'none';
+    } else {
+      descricao.style.display = '';
+      status.style.display = '';
+    }
+  });
+}
+
+async function atualizarStatus(tarefa, concluida, box) {
+  try {
+    const res = await fetch(`/tarefas/${tarefa._id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ concluida }),
+    });
+
+    if (!res.ok) throw new Error('Falha ao atualizar tarefa');
+
+    const dataAtualizada = await res.json();
+    tarefa.concluida = dataAtualizada.concluida;
+
+    atualizarExibicaoConcluidas()
+    salvarTarefasNoLocalStorage();
+
+  } catch (err) {
+    alert('Erro ao atualizar tarefa');
+    console.error(err);
+  }
+}
+
+async function excluirTarefa(tarefa, box) {
+  try {
+    const res = await fetch(`/tarefas/${tarefa._id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Erro ao excluir');
+
+    todasTarefas = todasTarefas.filter(t => t._id !== tarefa._id);
+    salvarTarefasNoLocalStorage();
+    atualizarExibicaoConcluidas()
+    box.remove();
+  } catch (err) {
+    alert('Erro ao excluir tarefa');
+    console.error(err);
+  }
+}
+
+async function init() {
+  try {
+    const res = await fetch('/tarefas');
+    todasTarefas = await res.json();
+    
+    atualizarExibicaoConcluidas()
+
     const filtroSalvo = sessionStorage.getItem('filtroTarefas') || 'todas';
     filtroSelect.value = filtroSalvo;
+
     mostrarTarefas();
+  } catch (err) {
+    console.error('Erro ao carregar tarefas:', err);
+  }
+}
+
+async function salvarTarefa() {
+  const tituloPop = document.getElementById('titulo').value.trim();
+  const descricaoPop = document.getElementById('descricao').value.trim();
+
+  if (!tituloPop || !descricaoPop) {
+    alert('Preencha os dois campos.');
+    return;
+  }
+
+  const response = await fetch(`/tarefas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      titulo: tituloPop,
+      descricao: descricaoPop,
+      concluida: false 
+    })
+  });
+
+  if (response.ok) {
+    fecharPopUp();
+  } else {
+    alert('Erro ao criar tarefa.');
+  }
+}
+
+function abrirPopUp(tarefa, index) {
+  const popup = document.getElementById('tarefasPop');
+  popup.style.display = 'flex';
+};
+
+function fecharPopUp() {
+  document.getElementById('tarefasPop').style.display = 'none';
+  window.location.reload();
+  atualizarExibicaoConcluidas()
+  document.getElementById('inputPopup').value = '';
 }
 
 filtroSelect.addEventListener('change', mostrarTarefas);
+atualizarExibicaoConcluidas()
 
 init();
-
