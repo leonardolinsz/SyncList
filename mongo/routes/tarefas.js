@@ -16,7 +16,7 @@ router.post('/', async (req, res) => {
     const { titulo, descricao } = req.body;
     const novaTarefa = new Tarefa({ titulo, descricao, concluida: false });
     await novaTarefa.save();
-    res.status(201).json(novaTarefa);
+    res.status(200).json(novaTarefa);
   } catch (error) {
     console.error('Erro ao criar tarefa:', error);
     res.status(500).json({ erro: 'Erro ao criar tarefa' });

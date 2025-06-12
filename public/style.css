@@ -18,7 +18,7 @@ h1{
   align-items: center;
   float: right;
   position: fixed;
-  top: 820px;
+  top: 600px;
   background-color: rgb(92, 143, 92);
   font-size: xx-large;
   width: 70px;
@@ -183,7 +183,6 @@ h1{
   background-color: #f9f9f9;
 }
 
-/* Botão estilo ícone */
 .btn-excluir-icon {
   position: absolute;
   top: 8px;
