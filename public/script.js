@@ -16,8 +16,6 @@ function salvarTarefasNoLocalStorage() {
 function carregarTarefasDoLocalStorage() {
   const salvas = localStorage.getItem('tarefas');
   todasTarefas = salvas ? JSON.parse(salvas) : [];
-  atualizarExibicaoConcluidas()
-
 }
 
 function mostrarTarefas() {
@@ -28,25 +26,28 @@ function mostrarTarefas() {
   if (filtro === 'pendentes') tarefasFiltradas = todasTarefas.filter(t => !t.concluida);
   else if (filtro === 'concluidas') tarefasFiltradas = todasTarefas.filter(t => t.concluida);
   
-  atualizarExibicaoConcluidas()
-
   tarefasContainer.innerHTML = tarefasFiltradas.map(tarefa => criarHTMLTarefa(tarefa)).join('');
   adicionarEventos();
+
+  atualizarExibicaoConcluidas()
 }
 
 function criarHTMLTarefa(tarefa) {
   return `
-    <div class="box" data-id="${tarefa._id || tarefa.titulo}">
-      <div>
-        <h2>Título: ${tarefa.titulo}</h2>
-        <p>Descrição: ${tarefa.descricao}</p>
-        <p>Status: ${tarefa.concluida ? 'Concluída' : 'Pendente'}</p>
-      </div>
-      <label class="checkbox-container">
-        <input type="checkbox" ${tarefa.concluida ? 'checked' : ''}>
-      </label>
-      <button class="btn-excluir-icon">🗑️</button>
-    </div>
+<div class="box" data-id="${tarefa._id || tarefa.titulo}">
+  <div>
+    <h2>Título: ${tarefa.titulo}</h2>
+    <p>Descrição: ${tarefa.descricao}</p>
+    <p>Status: ${tarefa.concluida ? 'Concluída' : 'Pendente'}</p>
+  </div>
+  <label class="checkbox-container">
+    <input type="checkbox" ${tarefa.concluida ? 'checked' : ''}>
+  </label>
+  <button class="btn-excluir-icon">
+    <img src="lixo.gif" alt="Excluir" width="30" height="30">
+  </button>
+</div>
+
   `;
 }
 
@@ -79,11 +80,13 @@ function atualizarExibicaoConcluidas() {
     const concluida = checkbox.checked;
 
     if (concluida) {
-      descricao.style.display = 'none';
-      status.style.display = 'none';
+      titulo.style.textDecoration = 'line-through'
+      descricao.style.textDecoration = 'line-through';
+      status.style.textDecoration = 'line-through';
     } else {
-      descricao.style.display = '';
-      status.style.display = '';
+      titulo.style.textDecoration = ''
+      descricao.style.textDecoration = '';
+      status.style.textDecoration = '';
     }
   });
 }
@@ -101,9 +104,9 @@ async function atualizarStatus(tarefa, concluida, box) {
     const dataAtualizada = await res.json();
     tarefa.concluida = dataAtualizada.concluida;
 
-    atualizarExibicaoConcluidas()
     salvarTarefasNoLocalStorage();
 
+    atualizarExibicaoConcluidas()
   } catch (err) {
     alert('Erro ao atualizar tarefa');
     console.error(err);
@@ -117,7 +120,9 @@ async function excluirTarefa(tarefa, box) {
 
     todasTarefas = todasTarefas.filter(t => t._id !== tarefa._id);
     salvarTarefasNoLocalStorage();
+
     atualizarExibicaoConcluidas()
+    
     box.remove();
   } catch (err) {
     alert('Erro ao excluir tarefa');
@@ -130,8 +135,6 @@ async function init() {
     const res = await fetch('/tarefas');
     todasTarefas = await res.json();
     
-    atualizarExibicaoConcluidas()
-
     const filtroSalvo = sessionStorage.getItem('filtroTarefas') || 'todas';
     filtroSelect.value = filtroSalvo;
 
@@ -175,11 +178,9 @@ function abrirPopUp(tarefa, index) {
 function fecharPopUp() {
   document.getElementById('tarefasPop').style.display = 'none';
   window.location.reload();
-  atualizarExibicaoConcluidas()
   document.getElementById('inputPopup').value = '';
 }
 
 filtroSelect.addEventListener('change', mostrarTarefas);
-atualizarExibicaoConcluidas()
 
 init();
